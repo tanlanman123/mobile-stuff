@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Stacky</title>
+  <meta name="description" content="A one-tap tower stacking game.">
+  <meta name="theme-color" content="#1b1430">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Stacky">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <div id="hud" class="hidden">
+    <div id="score">0</div>
+    <div id="combo"></div>
+  </div>
+
+  <div id="menu" class="overlay">
+    <h1>Stacky</h1>
+    <p class="tag">Tap to drop. Don't miss.</p>
+    <p class="best">Best: <span id="menu-best">0</span></p>
+    <p class="hint pulse">Tap to start</p>
+  </div>
+
+  <div id="over" class="overlay hidden">
+    <div class="card">
+      <p class="label">Score</p>
+      <p id="final" class="big">0</p>
+      <p id="new-best" class="hidden">New best!</p>
+      <p class="best">Best: <span id="over-best">0</span></p>
+      <p id="rank" class="rank"></p>
+      <p class="hint pulse">Tap to retry</p>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
+    }
+  </script>
+</body>
+</html>
