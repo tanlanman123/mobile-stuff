@@ -21,9 +21,17 @@
   <div id="top">
     <a class="btn round" href="../" aria-label="Back to games">&#8592;</a>
     <div class="spacer"></div>
+    <button id="walls" class="btn on">Walls</button>
     <button id="tilt" class="btn">Tilt</button>
     <button id="pause" class="btn round" aria-label="Pause">&#10074;&#10074;</button>
     <button id="clear" class="btn">Clear</button>
+  </div>
+
+  <div id="zoom">
+    <button id="zoom-in" class="btn round" aria-label="Zoom in">+</button>
+    <button id="zoom-out" class="btn round" aria-label="Zoom out">&#8722;</button>
+    <button id="zoom-reset" class="btn round" aria-label="Reset view">&#8962;</button>
+    <span id="zoom-level">1×</span>
   </div>
 
   <div id="panel">
@@ -53,11 +61,11 @@
       <input id="size" type="range" min="10" max="80" value="30">
       <output id="size-out">30</output>
     </label>
-    <label class="slider">
-      <span>Mass</span>
-      <input id="mass" type="range" min="0" max="100" value="37">
-      <output id="mass-out">1 kg</output>
-    </label>
+    <div class="slider">
+      <span>Mass<em id="mass-hint" class="hidden">pulls!</em></span>
+      <input id="mass" type="range" min="0" max="100" value="37" aria-label="Mass">
+      <span class="num"><input id="mass-num" type="number" inputmode="decimal" min="0" step="any" value="1" aria-label="Mass in kg">kg</span>
+    </div>
     <label class="slider">
       <span>Bounce</span>
       <input id="bounce" type="range" min="0" max="95" value="30">

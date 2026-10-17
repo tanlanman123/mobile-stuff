@@ -263,6 +263,11 @@ const Physics = (() => {
       this.joints = []; // drag handles: { body, anchor (local), target (world), maxForce }
       this.cache = new Map(); // last step's contact impulses, for warm starting
       this.neighbors = new Map(); // body -> bodies it touched last substep
+      // Bodies at least this heavy pull everything else toward them.
+      this.attractMass = 10000;
+      this.attractK = 1500;      // pull = K * mass / distance^2 (px/s^2)
+      this.maxPull = 40000;      // cap so close passes don't explode
+      this.maxSpeed = 40000;     // px/s
       this.correction = 0.25; // fraction of overlap fixed per substep
       this.slop = 0.3;        // overlap (px) allowed before correcting
     }
@@ -308,9 +313,18 @@ const Physics = (() => {
       this.updateSleep(dt);
     }
 
+    attractors() {
+      return this.bodies.filter((b) => !b.isStatic && b.mass >= this.attractMass);
+    }
+
     // A body falls asleep once it and everything it touches has been nearly
     // still for a moment.
     updateSleep(dt) {
+      // A moving attractor changes the pull on everything, so nothing rests.
+      if (this.attractors().some((a) => !a.sleeping)) {
+        for (const b of this.bodies) if (b.sleeping) this.wake(b);
+        return;
+      }
       const REST = 0.8;
       for (const b of this.bodies) {
         if (b.isStatic || b.sleeping) continue;
@@ -352,10 +366,28 @@ const Physics = (() => {
         if (b.isStatic || b.sleeping) continue;
         b.vel.x += this.gravity.x * h;
         b.vel.y += this.gravity.y * h;
-        // A little air drag keeps things from spinning or rolling forever.
-        b.vel.x *= 1 - 0.1 * h;
-        b.vel.y *= 1 - 0.1 * h;
+        // Spin drag keeps balls from rolling forever. No linear drag, so
+        // orbits last.
         b.angVel *= 1 - 0.6 * h;
+      }
+
+      // Heavy bodies attract everything else, like planets.
+      const attractors = this.attractors();
+      if (attractors.length) {
+        for (const b of bodies) {
+          if (b.isStatic || b.sleeping) continue;
+          for (const a of attractors) {
+            if (a === b) continue;
+            const dx = a.pos.x - b.pos.x, dy = a.pos.y - b.pos.y;
+            const d2 = dx * dx + dy * dy;
+            // Softened inside the attractor so the pull stays finite.
+            const soft = Math.max(d2, a.radius * a.radius);
+            const pull = Math.min(this.attractK * a.mass / soft, this.maxPull);
+            const d = Math.sqrt(d2) || 1;
+            b.vel.x += (dx / d) * pull * h;
+            b.vel.y += (dy / d) * pull * h;
+          }
+        }
       }
 
       for (const j of this.joints) {
@@ -482,6 +514,8 @@ const Physics = (() => {
 
       for (const b of bodies) {
         if (b.isStatic || b.sleeping) continue;
+        const sp = Math.hypot(b.vel.x, b.vel.y);
+        if (sp > this.maxSpeed) { b.vel.x *= this.maxSpeed / sp; b.vel.y *= this.maxSpeed / sp; }
         b.pos.x += b.vel.x * h;
         b.pos.y += b.vel.y * h;
         b.angle += b.angVel * h;

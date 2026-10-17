@@ -9,17 +9,50 @@
 
   const world = new World();
   const MAX_BODIES = 80;
-  const WALL = 400; // wall thickness, mostly off-screen
+  const WALL = 400; // wall thickness
 
-  let W = 0, H = 0, floorY = 0;
+  let W = 0, H = 0, dpr = 1, floorY = 0;
+  let roomW = 0, roomH = 0; // the walled room, in world units
   let walls = [];
+  let wallsOn = true;
   let paused = false;
   let tool = 'ball';
 
+  // ---- Camera: world -> screen is (p - cam) * zoom + view center ----
+  const cam = { x: 0, y: 0, zoom: 1 };
+  const MAX_ZOOM = 20;
+  const viewCenter = () => vec(W / 2, floorY / 2);
+  const toScreen = (p) => vec((p.x - cam.x) * cam.zoom + W / 2, (p.y - cam.y) * cam.zoom + floorY / 2);
+  const toWorld = (p) => vec((p.x - W / 2) / cam.zoom + cam.x, (p.y - floorY / 2) / cam.zoom + cam.y);
+
+  function zoomAt(screenP, factor) {
+    const before = toWorld(screenP);
+    cam.zoom = Math.min(MAX_ZOOM, cam.zoom * factor); // no lower limit: zoom out forever
+    const after = toWorld(screenP);
+    cam.x += before.x - after.x;
+    cam.y += before.y - after.y;
+  }
+
+  function resetView() {
+    cam.x = roomW / 2;
+    cam.y = roomH / 2;
+    cam.zoom = 1;
+  }
+
   // ---- Settings from the panel ----
-  const massFromSlider = (v) => 0.1 * Math.pow(500, v / 100); // 0.1 kg .. 50 kg
-  const fmtMass = (m) => (m < 10 ? m.toFixed(1).replace(/\.0$/, '') : Math.round(m)) + ' kg';
+  const MASS_MIN = 0.1, MASS_SLIDER_MAX = 50;
+  const massFromSlider = (v) => MASS_MIN * Math.pow(MASS_SLIDER_MAX / MASS_MIN, v / 100);
+  const sliderFromMass = (m) => (100 * Math.log(m / MASS_MIN)) / Math.log(MASS_SLIDER_MAX / MASS_MIN);
   const settings = { size: 30, mass: 1, bounce: 0.3 };
+
+  function fmtNum(m) {
+    if (m >= 1e9) return +(m / 1e9).toPrecision(3) + 'B';
+    if (m >= 1e6) return +(m / 1e6).toPrecision(3) + 'M';
+    if (m >= 1e4) return +(m / 1e3).toPrecision(3) + 'k';
+    if (m >= 10) return String(Math.round(m));
+    return String(+m.toPrecision(2));
+  }
+  const fmtMass = (m) => fmtNum(m) + ' kg';
 
   function bindSlider(id, apply) {
     const input = $(id), out = $(id + '-out');
@@ -28,8 +61,27 @@
     update();
   }
   bindSlider('size', (v) => { settings.size = v; return String(v); });
-  bindSlider('mass', (v) => { settings.mass = massFromSlider(v); return fmtMass(settings.mass); });
   bindSlider('bounce', (v) => { settings.bounce = v / 100; return v + '%'; });
+
+  // Mass: the slider covers 0.1-50 kg; the box takes any number you type.
+  const massSlider = $('mass'), massBox = $('mass-num');
+  massSlider.addEventListener('input', () => {
+    settings.mass = massFromSlider(Number(massSlider.value));
+    massBox.value = +settings.mass.toPrecision(2);
+    updateMassHint();
+  });
+  massBox.addEventListener('input', () => {
+    const m = parseFloat(massBox.value);
+    if (!(m > 0) || !isFinite(m)) return;
+    settings.mass = m;
+    massSlider.value = Math.max(0, Math.min(100, sliderFromMass(m)));
+    updateMassHint();
+  });
+  massBox.addEventListener('keydown', (e) => { if (e.key === 'Enter') massBox.blur(); });
+  function updateMassHint() {
+    $('mass-hint').classList.toggle('hidden', settings.mass < world.attractMass);
+  }
+  updateMassHint();
 
   document.querySelectorAll('.tool').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -99,36 +151,60 @@
     grabs.clear();
   });
 
+  $('walls').addEventListener('click', () => {
+    wallsOn = !wallsOn;
+    $('walls').classList.toggle('on', wallsOn);
+    buildWalls();
+    world.wakeAll();
+  });
+
+  $('zoom-in').addEventListener('click', () => zoomAt(viewCenter(), 1.6));
+  $('zoom-out').addEventListener('click', () => zoomAt(viewCenter(), 1 / 1.6));
+  $('zoom-reset').addEventListener('click', resetView);
+
   // ---- Layout ----
   function buildWalls() {
     for (const w of walls) world.remove(w);
+    walls = [];
+    if (!wallsOn) return;
     const make = (x, y, w, h) => world.add(new Body({
       shape: 'poly', x, y, verts: shapes.box(w, h), isStatic: true, restitution: 1, friction: 0.6,
     }));
     walls = [
-      make(W / 2, floorY + WALL / 2, W + WALL * 2, WALL),                 // floor
-      make(W / 2, -WALL / 2, W + WALL * 2, WALL),                         // ceiling at the top edge
-      make(-WALL / 2, floorY / 2, WALL, floorY + WALL * 2),               // left
-      make(W + WALL / 2, floorY / 2, WALL, floorY + WALL * 2),            // right
+      make(roomW / 2, roomH + WALL / 2, roomW + WALL * 2, WALL),          // floor
+      make(roomW / 2, -WALL / 2, roomW + WALL * 2, WALL),                 // ceiling
+      make(-WALL / 2, roomH / 2, WALL, roomH + WALL * 2),                 // left
+      make(roomW + WALL / 2, roomH / 2, WALL, roomH + WALL * 2),          // right
     ];
   }
 
   function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    dpr = Math.min(window.devicePixelRatio || 1, 3);
     W = window.innerWidth;
     H = window.innerHeight;
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     floorY = panel.getBoundingClientRect().top;
+    $('zoom').style.bottom = (H - floorY + 12) + 'px';
+    // The on-screen keyboard (typing a mass) shrinks the window; don't
+    // rebuild the room for that.
+    if (document.activeElement === massBox) return;
+    const oldW = roomW, oldH = roomH;
+    roomW = W;
+    roomH = floorY;
+    if (oldW === roomW && oldH === roomH) return;
     buildWalls();
-    // Pull anything that ended up outside back into view.
-    for (const b of world.bodies) {
-      if (b.isStatic) continue;
-      b.pos.x = Math.min(Math.max(b.pos.x, b.radius), W - b.radius);
-      b.pos.y = Math.min(Math.max(b.pos.y, b.radius), floorY - b.radius);
-      b.updateGeometry();
+    if (wallsOn) {
+      // Pull anything that was inside the old room into the new one.
+      for (const b of world.bodies) {
+        if (b.isStatic) continue;
+        if (b.pos.x < 0 || b.pos.x > oldW || b.pos.y < 0 || b.pos.y > oldH) continue;
+        b.pos.x = Math.min(Math.max(b.pos.x, b.radius), roomW - b.radius);
+        b.pos.y = Math.min(Math.max(b.pos.y, b.radius), roomH - b.radius);
+        b.updateGeometry();
+      }
     }
+    if (!oldW) resetView();
     world.wakeAll();
   }
   window.addEventListener('resize', resize);
@@ -136,7 +212,7 @@
   // ---- Spawning ----
   function colorFor(mass) {
     // Light objects are pale, heavy ones are deep and dark.
-    const t = Math.log(mass / 0.1) / Math.log(500);
+    const t = Math.min(1, Math.max(0, Math.log(mass / MASS_MIN) / Math.log(MASS_SLIDER_MAX / MASS_MIN)));
     const hue = Math.floor(Math.random() * 360);
     return { hue, light: 72 - t * 40 };
   }
@@ -151,9 +227,11 @@
     else if (kind === 'hexagon') body = new Body({ ...common, shape: 'poly', verts: shapes.regular(6, size) });
     else return null;
 
-    // Keep it inside the walls and above the floor.
-    body.pos.x = Math.min(Math.max(x, body.radius + 1), W - body.radius - 1);
-    body.pos.y = Math.min(Math.max(y, body.radius + 1), floorY - body.radius - 1);
+    // Tapping inside the room keeps the new shape inside the walls.
+    if (wallsOn && x >= 0 && x <= roomW && y >= 0 && y <= roomH) {
+      body.pos.x = Math.min(Math.max(x, body.radius + 1), roomW - body.radius - 1);
+      body.pos.y = Math.min(Math.max(y, body.radius + 1), roomH - body.radius - 1);
+    }
     body.updateGeometry();
     world.add(body);
 
@@ -162,53 +240,150 @@
     return body;
   }
 
-  // ---- Touch: tap empty space to add, drag a shape to throw it ----
-  const grabs = new Map(); // pointerId -> joint
+  // Finds the shape under a screen point, with some slack for tiny shapes
+  // when zoomed far out.
+  function bodyAtScreen(sp) {
+    const p = toWorld(sp);
+    const hit = world.bodyAt(p);
+    if (hit) return hit;
+    const slack = 14 / cam.zoom;
+    let best = null, bestD = Infinity;
+    for (const b of world.bodies) {
+      if (b.isStatic) continue;
+      const d = Math.hypot(b.pos.x - p.x, b.pos.y - p.y) - b.radius;
+      if (d < slack && d < bestD) { best = b; bestD = d; }
+    }
+    return best;
+  }
+
+  // ---- Touch ----
+  // One finger: drag a shape, or tap empty space to add one (on release,
+  // so a pinch doesn't also add shapes). Two fingers: pinch to zoom and
+  // drag to move around.
+  const grabs = new Map();   // pointerId -> joint
+  const pointers = new Map(); // pointerId -> { x, y, startX, startY }
+  let pinch = null;          // { dist, mid } from the last pinch frame
+  let gestureWasPinch = false;
+
+  function startPinch() {
+    // A second finger cancels whatever the first one was doing.
+    for (const joint of grabs.values()) world.joints = world.joints.filter((j) => j !== joint);
+    grabs.clear();
+    gestureWasPinch = true;
+    const [a, b] = [...pointers.values()];
+    pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y), mid: vec((a.x + b.x) / 2, (a.y + b.y) / 2) };
+  }
 
   canvas.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     canvas.setPointerCapture(e.pointerId);
-    const p = vec(e.clientX, e.clientY);
-    const hit = world.bodyAt(p);
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, startX: e.clientX, startY: e.clientY });
+    if (pointers.size === 2) { startPinch(); return; }
+    if (pointers.size > 2) return;
+    gestureWasPinch = false;
 
+    const sp = vec(e.clientX, e.clientY);
+    const hit = bodyAtScreen(sp);
     if (tool === 'erase') {
       if (hit) world.remove(hit);
       return;
     }
     if (hit) {
-      const joint = { body: hit, anchor: hit.worldToLocal(p), target: p, maxForce: 100000 }; // 50 kg lifts, but slowly
+      const p = toWorld(sp);
+      // Light things fly; 50 kg lifts slowly; anything heavier is pushed
+      // around like a heavy thing, but still moves.
+      const maxForce = 100000 + Math.max(0, hit.mass - 50) * 3000;
+      const joint = { body: hit, anchor: hit.worldToLocal(p), target: p, maxForce };
       world.joints.push(joint);
       grabs.set(e.pointerId, joint);
-    } else if (p.y < floorY) {
-      spawn(tool, p.x, p.y);
     }
   });
 
   canvas.addEventListener('pointermove', (e) => {
-    const p = vec(e.clientX, e.clientY);
+    const ptr = pointers.get(e.pointerId);
+    if (!ptr) return;
+    ptr.x = e.clientX;
+    ptr.y = e.clientY;
+
+    if (pointers.size === 2 && pinch) {
+      const [a, b] = [...pointers.values()];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      const mid = vec((a.x + b.x) / 2, (a.y + b.y) / 2);
+      cam.x -= (mid.x - pinch.mid.x) / cam.zoom;
+      cam.y -= (mid.y - pinch.mid.y) / cam.zoom;
+      if (pinch.dist > 0 && dist > 0) zoomAt(mid, dist / pinch.dist);
+      pinch = { dist, mid };
+      return;
+    }
+
+    const sp = vec(e.clientX, e.clientY);
     const joint = grabs.get(e.pointerId);
-    if (joint) joint.target = p;
+    if (joint) joint.target = toWorld(sp);
     else if (tool === 'erase' && e.buttons) {
-      const hit = world.bodyAt(p);
+      const hit = bodyAtScreen(sp);
       if (hit) world.remove(hit);
     }
   });
 
   const release = (e) => {
+    const ptr = pointers.get(e.pointerId);
+    pointers.delete(e.pointerId);
+    if (pointers.size < 2) pinch = null;
+
     const joint = grabs.get(e.pointerId);
-    if (!joint) return;
-    world.joints = world.joints.filter((j) => j !== joint);
-    grabs.delete(e.pointerId);
+    if (joint) {
+      world.joints = world.joints.filter((j) => j !== joint);
+      grabs.delete(e.pointerId);
+      return;
+    }
+    // A short tap on empty space adds a shape.
+    if (e.type === 'pointerup' && ptr && !gestureWasPinch && tool !== 'erase' && pointers.size === 0) {
+      const moved = Math.hypot(ptr.x - ptr.startX, ptr.y - ptr.startY);
+      const sp = vec(ptr.startX, ptr.startY);
+      if (moved < 12 && sp.y < floorY && !bodyAtScreen(sp)) {
+        const p = toWorld(sp);
+        spawn(tool, p.x, p.y);
+      }
+    }
   };
   canvas.addEventListener('pointerup', release);
   canvas.addEventListener('pointercancel', release);
 
-  // ---- Drawing ----
-  function drawBody(b) {
+  // Mouse wheel / trackpad zoom on computers.
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    zoomAt(vec(e.clientX, e.clientY), Math.exp(-e.deltaY * 0.0015));
+  }, { passive: false });
+
+  // ---- Drawing (in world units; line widths divided by zoom) ----
+  function drawBody(b, px) {
     const { hue, light } = b.color;
-    ctx.fillStyle = `hsl(${hue}, 70%, ${light}%)`;
+    const fill = `hsl(${hue}, 70%, ${light}%)`;
+    const attractor = b.mass >= world.attractMass;
+
+    // Too small to see: draw a dot that stays visible.
+    if (b.radius * cam.zoom < 1.5) {
+      ctx.fillStyle = attractor ? '#ffb020' : fill;
+      ctx.beginPath();
+      ctx.arc(b.pos.x, b.pos.y, (attractor ? 3 : 1.5) * px, 0, Math.PI * 2);
+      ctx.fill();
+      return;
+    }
+
+    if (attractor) {
+      // Glow showing it pulls things in.
+      const glow = ctx.createRadialGradient(b.pos.x, b.pos.y, b.radius, b.pos.x, b.pos.y, b.radius * 2.6);
+      glow.addColorStop(0, `hsla(${hue}, 90%, 60%, 0.35)`);
+      glow.addColorStop(1, `hsla(${hue}, 90%, 60%, 0)`);
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(b.pos.x, b.pos.y, b.radius * 2.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = fill;
     ctx.strokeStyle = `hsl(${hue}, 70%, ${Math.max(light - 22, 8)}%)`;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2 * px;
     ctx.beginPath();
     if (b.shape === 'circle') {
       ctx.arc(b.pos.x, b.pos.y, b.radius, 0, Math.PI * 2);
@@ -228,42 +403,80 @@
       ctx.stroke();
     }
 
-    if (b.radius >= 22) {
+    if (b.radius * cam.zoom >= 22) {
       ctx.fillStyle = light > 50 ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.85)';
-      ctx.font = `700 ${Math.min(14, b.radius * 0.45)}px -apple-system, BlinkMacSystemFont, sans-serif`;
+      ctx.font = `700 ${Math.min(14 * px, b.radius * 0.45)}px -apple-system, BlinkMacSystemFont, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(fmtMass(b.mass), b.pos.x, b.pos.y);
     }
   }
 
+  function drawGrid(px) {
+    // Pick a spacing that looks about 40-200 px apart at any zoom.
+    let step = 40;
+    while (step * cam.zoom < 40) step *= 5;
+    while (step * cam.zoom > 200) step /= 5;
+    const tl = toWorld(vec(0, 0)), br = toWorld(vec(W, H));
+    const x0 = Math.floor(tl.x / step) * step, y0 = Math.floor(tl.y / step) * step;
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = px;
+    ctx.beginPath();
+    for (let x = x0; x <= br.x; x += step) { ctx.moveTo(x, tl.y); ctx.lineTo(x, br.y); }
+    for (let y = y0; y <= br.y; y += step) { ctx.moveTo(tl.x, y); ctx.lineTo(br.x, y); }
+    ctx.stroke();
+  }
+
   function render() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = '#141f23';
     ctx.fillRect(0, 0, W, H);
 
-    // Faint grid for a sense of scale.
-    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let x = 0; x < W; x += 40) { ctx.moveTo(x + 0.5, 0); ctx.lineTo(x + 0.5, floorY); }
-    for (let y = floorY; y > 0; y -= 40) { ctx.moveTo(0, y + 0.5); ctx.lineTo(W, y + 0.5); }
-    ctx.stroke();
+    // Switch to world units.
+    const z = cam.zoom;
+    ctx.setTransform(dpr * z, 0, 0, dpr * z, dpr * (W / 2 - cam.x * z), dpr * (floorY / 2 - cam.y * z));
+    const px = 1 / z; // one screen pixel, in world units
 
-    for (const b of world.bodies) if (!b.isStatic) drawBody(b);
+    drawGrid(px);
+
+    if (wallsOn) {
+      ctx.fillStyle = '#0b1316';
+      for (const w of walls) {
+        ctx.beginPath();
+        ctx.moveTo(w.wv[0].x, w.wv[0].y);
+        for (let i = 1; i < w.wv.length; i++) ctx.lineTo(w.wv[i].x, w.wv[i].y);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.strokeStyle = 'rgba(255,176,32,0.35)';
+      ctx.lineWidth = 2 * px;
+      ctx.strokeRect(0, 0, roomW, roomH);
+    }
+
+    // Only draw what's on screen.
+    const tl = toWorld(vec(0, 0)), br = toWorld(vec(W, H));
+    for (const b of world.bodies) {
+      if (b.isStatic) continue;
+      const r = b.radius * 2.6 + 4 * px;
+      if (b.pos.x + r < tl.x || b.pos.x - r > br.x || b.pos.y + r < tl.y || b.pos.y - r > br.y) continue;
+      drawBody(b, px);
+    }
 
     for (const j of world.joints) {
       const p = j.body.localToWorld(j.anchor);
       ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2 * px;
       ctx.beginPath();
       ctx.moveTo(p.x, p.y);
       ctx.lineTo(j.target.x, j.target.y);
       ctx.stroke();
       ctx.fillStyle = '#fff';
       ctx.beginPath();
-      ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, 4 * px, 0, Math.PI * 2);
       ctx.fill();
     }
+
+    $('zoom-level').textContent = fmtNum(cam.zoom < 1 ? cam.zoom : Math.round(cam.zoom * 10) / 10) + '×';
   }
 
   // ---- Loop (fixed physics step) ----
@@ -277,9 +490,10 @@
       if (!paused) world.step(STEP);
       acc -= STEP;
     }
-    // Drop anything that escaped the box entirely.
+    // Drop anything broken or unimaginably far away.
     for (const b of world.bodies.slice()) {
-      if (!b.isStatic && (b.pos.y > H + 500 || b.pos.x < -WALL || b.pos.x > W + WALL)) world.remove(b);
+      if (b.isStatic) continue;
+      if (!isFinite(b.pos.x) || !isFinite(b.pos.y) || Math.abs(b.pos.x) > 1e12 || Math.abs(b.pos.y) > 1e12) world.remove(b);
     }
     render();
     requestAnimationFrame(frame);
@@ -289,13 +503,13 @@
   resize();
 
   // A few starter objects so there's something to play with.
-  const cx = W / 2;
-  spawn('box', cx - 60, floorY - 40, 22, 2, 0.1);
-  spawn('box', cx - 60, floorY - 100, 22, 1, 0.1);
-  spawn('box', cx - 60, floorY - 160, 22, 0.5, 0.1);
-  spawn('ball', cx + 70, floorY - 250, 30, 20, 0.2);
-  spawn('ball', cx + 40, floorY - 400, 16, 0.2, 0.8);
-  spawn('hexagon', cx - 20, floorY - 320, 24, 5, 0.2);
+  const cx = roomW / 2;
+  spawn('box', cx - 60, roomH - 40, 22, 2, 0.1);
+  spawn('box', cx - 60, roomH - 100, 22, 1, 0.1);
+  spawn('box', cx - 60, roomH - 160, 22, 0.5, 0.1);
+  spawn('ball', cx + 70, roomH - 250, 30, 20, 0.2);
+  spawn('ball', cx + 40, roomH - 400, 16, 0.2, 0.8);
+  spawn('hexagon', cx - 20, roomH - 320, 24, 5, 0.2);
 
   requestAnimationFrame(frame);
 })();

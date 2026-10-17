@@ -32,13 +32,16 @@ Then open http://localhost:8000.
 A sandbox running a small physics engine written from scratch (`physics/engine.js`, no libraries).
 
 - **Tap empty space** to drop the selected shape: ball, box, plank, triangle or hexagon.
-- **Size / Mass / Bounce** sliders set what the next shape will be. Mass goes from 0.1 kg to 50 kg, and darker shapes are heavier.
+- **Size / Mass / Bounce** sliders set what the next shape will be. The mass slider goes from 0.1 kg to 50 kg; **type any mass** into the box next to it (e.g. `1000000`). Darker shapes are heavier.
+- **10,000 kg or more** and a shape becomes an attractor: it glows and pulls everything toward it like a planet. Set Gravity to 0% and turn Walls off to make orbits.
 - **Drag a shape** to carry or throw it. Heavy things are hard to lift.
 - **✕ tool** erases shapes you tap or swipe over.
 - **Gravity** slider sets how strong gravity is, from 0% (floating) to 300%.
+- **Pinch** with two fingers to zoom and pan (or use the + / − / ⌂ buttons). You can zoom out as far as you like.
+- **Walls** button removes the room for open, endless space.
 - **Tilt** button makes gravity follow your phone, so you can pour things around. It calibrates when you turn it on, so hold the phone upright at that moment.
 
-Engine features: circles and convex polygons, friction, restitution, warm-started impulse solver with substeps, shock propagation and mass-ratio limiting for stable stacks of very different masses, and sleeping for piles at rest.
+Engine features: circles and convex polygons, friction, restitution, warm-started impulse solver with substeps, shock propagation and mass-ratio limiting for stable stacks of very different masses, and sleeping for piles at rest, and inverse-square attraction toward heavy bodies.
 
 ## Adding a game
 
