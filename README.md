@@ -32,7 +32,7 @@ Then open http://localhost:8000.
 A sandbox running a small physics engine written from scratch (`physics/engine.js`, no libraries).
 
 - **Tap empty space** to drop the selected shape: ball, box, plank, triangle or hexagon.
-- **Size / Mass / Bounce** sliders set what the next shape will be. The mass slider goes from 0.1 kg to 50 kg; **type any mass** into the box next to it (e.g. `1000000`). Darker shapes are heavier.
+- **Size / Mass / Bounce** sliders set what the next shape will be. The sliders cover everyday sizes and masses; **type any size or mass** into the boxes next to them (e.g. size `5000`, mass `1000000000`). Darker shapes are heavier.
 - **10,000 kg or more** and a shape becomes an attractor: it glows and pulls everything toward it like a planet. Set Gravity to 0% and turn Walls off to make orbits.
 - **Drag a shape** to carry or throw it. Heavy things are hard to lift.
 - **✕ tool** erases shapes you tap or swipe over.

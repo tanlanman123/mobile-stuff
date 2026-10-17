@@ -266,8 +266,8 @@ const Physics = (() => {
       // Bodies at least this heavy pull everything else toward them.
       this.attractMass = 10000;
       this.attractK = 1500;      // pull = K * mass / distance^2 (px/s^2)
-      this.maxPull = 40000;      // cap so close passes don't explode
-      this.maxSpeed = 40000;     // px/s
+      this.maxPull = 200000;     // cap so close passes don't explode
+      this.maxSpeed = 100000;    // px/s
       this.correction = 0.25; // fraction of overlap fixed per substep
       this.slop = 0.3;        // overlap (px) allowed before correcting
     }

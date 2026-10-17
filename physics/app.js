@@ -60,7 +60,18 @@
     input.addEventListener('input', update);
     update();
   }
-  bindSlider('size', (v) => { settings.size = v; return String(v); });
+  // Size: the slider covers 10-80; the box takes any size you type.
+  const sizeSlider = $('size'), sizeBox = $('size-num');
+  sizeSlider.addEventListener('input', () => {
+    settings.size = Number(sizeSlider.value);
+    sizeBox.value = settings.size;
+  });
+  sizeBox.addEventListener('input', () => {
+    const v = parseFloat(sizeBox.value);
+    if (!(v >= 1) || !isFinite(v)) return;
+    settings.size = v;
+    sizeSlider.value = Math.max(10, Math.min(80, v));
+  });
   bindSlider('bounce', (v) => { settings.bounce = v / 100; return v + '%'; });
 
   // Mass: the slider covers 0.1-50 kg; the box takes any number you type.
@@ -77,7 +88,7 @@
     massSlider.value = Math.max(0, Math.min(100, sliderFromMass(m)));
     updateMassHint();
   });
-  massBox.addEventListener('keydown', (e) => { if (e.key === 'Enter') massBox.blur(); });
+  for (const box of [massBox, sizeBox]) box.addEventListener('keydown', (e) => { if (e.key === 'Enter') box.blur(); });
   function updateMassHint() {
     $('mass-hint').classList.toggle('hidden', settings.mass < world.attractMass);
   }
@@ -190,7 +201,7 @@
     $('zoom').style.bottom = (H - floorY + 12) + 'px';
     // The on-screen keyboard (typing a mass) shrinks the window; don't
     // rebuild the room for that.
-    if (document.activeElement === massBox) return;
+    if (document.activeElement === massBox || document.activeElement === sizeBox) return;
     const oldW = roomW, oldH = roomH;
     roomW = W;
     roomH = floorY;
@@ -230,7 +241,8 @@
     else return null;
 
     // Tapping inside the room keeps the new shape inside the walls.
-    if (wallsOn && x >= 0 && x <= roomW && y >= 0 && y <= roomH) {
+    const fits = body.radius * 2 < Math.min(roomW, roomH);
+    if (wallsOn && fits && x >= 0 && x <= roomW && y >= 0 && y <= roomH) {
       body.pos.x = Math.min(Math.max(x, body.radius + 1), roomW - body.radius - 1);
       body.pos.y = Math.min(Math.max(y, body.radius + 1), roomH - body.radius - 1);
     }

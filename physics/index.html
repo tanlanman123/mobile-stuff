@@ -56,11 +56,11 @@
       </button>
     </div>
 
-    <label class="slider">
+    <div class="slider">
       <span>Size</span>
-      <input id="size" type="range" min="10" max="80" value="30">
-      <output id="size-out">30</output>
-    </label>
+      <input id="size" type="range" min="10" max="80" value="30" aria-label="Size">
+      <span class="num"><input id="size-num" type="number" inputmode="decimal" min="1" step="any" value="30" aria-label="Size">px</span>
+    </div>
     <div class="slider">
       <span>Mass<em id="mass-hint" class="hidden">pulls!</em></span>
       <input id="mass" type="range" min="0" max="100" value="37" aria-label="Mass">
