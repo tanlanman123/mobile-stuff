@@ -100,7 +100,15 @@
 
   <script>
     if ('serviceWorker' in navigator) {
+      const hadController = !!navigator.serviceWorker.controller;
       window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
+      // When an update takes over, reload once so the new version shows up.
+      let reloaded = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (reloaded || !hadController) return;
+        reloaded = true;
+        location.reload();
+      });
     }
   </script>
 </body>

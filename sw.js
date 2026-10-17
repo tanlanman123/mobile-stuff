@@ -1,5 +1,5 @@
 // Bump this when you change any file so phones pick up the new version.
-const CACHE = 'arcade-v8';
+const CACHE = 'arcade-v9';
 const FILES = [
   './',
   'index.html',
@@ -26,7 +26,7 @@ const FILES = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES.map((f) => new Request(f, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {
@@ -38,10 +38,12 @@ self.addEventListener('activate', (e) => {
 });
 
 // Network first so updates show up when online; fall back to cache offline.
+// 'no-cache' makes the browser check with the server instead of reusing its
+// own HTTP cache, which GitHub Pages lets go stale for up to 10 minutes.
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, { cache: 'no-cache' })
       .then((res) => {
         const copy = res.clone();
         caches.open(CACHE).then((c) => c.put(e.request, copy));
