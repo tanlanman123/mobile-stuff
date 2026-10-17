@@ -43,10 +43,35 @@
     h1 { font-size: 32px; font-weight: 900; letter-spacing: -0.5px; }
     .sub { font-size: 14px; color: #ffb020; font-weight: 700; }
 
+    .sections {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    section {
+      padding: 12px 10px 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    h2 {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin: 0 2px 12px;
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    .ai h2 { color: #ffb020; }
+    .human h2 { color: #5ad1a6; }
+
     .grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
     }
 
     .game {
@@ -57,7 +82,9 @@
       color: #fff;
       text-decoration: none;
       font-weight: 700;
-      font-size: 15px;
+      font-size: 12px;
+      text-align: center;
+      min-width: 0;
     }
 
     .game img {
@@ -69,6 +96,20 @@
     }
 
     .game:active img { transform: scale(0.94); }
+
+    .empty .slot {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 22%;
+      border: 2px dashed rgba(90, 209, 166, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(90, 209, 166, 0.7);
+      font-size: 24px;
+    }
+
+    .empty span { color: rgba(255, 255, 255, 0.45); font-weight: 600; }
   </style>
 </head>
 <body>
@@ -81,17 +122,32 @@
       </div>
     </header>
 
-    <!-- Add new games here; they fill in left to right, top to bottom. -->
-    <nav class="grid">
-      <a class="game" href="stacky/">
-        <img src="stacky/thumb.png" alt="">
-        <span>Stacky</span>
-      </a>
-      <a class="game" href="physics/">
-        <img src="physics/thumb.png" alt="">
-        <span>Physics</span>
-      </a>
-    </nav>
+    <!-- Add new games to a section's grid; they fill in two per row. -->
+    <div class="sections">
+      <section class="ai">
+        <h2>AI Made</h2>
+        <nav class="grid">
+          <a class="game" href="stacky/">
+            <img src="stacky/thumb.png" alt="">
+            <span>Stacky</span>
+          </a>
+          <a class="game" href="physics/">
+            <img src="physics/thumb.png" alt="">
+            <span>Physics</span>
+          </a>
+        </nav>
+      </section>
+
+      <section class="human">
+        <h2>Human Made</h2>
+        <nav class="grid">
+          <div class="game empty">
+            <div class="slot">+</div>
+            <span>Coming soon</span>
+          </div>
+        </nav>
+      </section>
+    </div>
   </main>
 
   <script>
