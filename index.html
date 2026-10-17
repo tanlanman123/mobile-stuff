@@ -3,45 +3,93 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <title>Stacky</title>
-  <meta name="description" content="A one-tap tower stacking game.">
-  <meta name="theme-color" content="#1b1430">
+  <title>67 Arcade</title>
+  <meta name="description" content="A little collection of games.">
+  <meta name="theme-color" content="#141f23">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Stacky">
+  <meta name="apple-mobile-web-app-title" content="67 Arcade">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      min-height: 100%;
+      background: #141f23;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    main {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: calc(env(safe-area-inset-top) + 32px) 16px calc(env(safe-area-inset-bottom) + 32px);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    header img { width: 48px; height: 48px; border-radius: 12px; }
+    h1 { font-size: 32px; font-weight: 900; letter-spacing: -0.5px; }
+    .sub { font-size: 14px; color: #ffb020; font-weight: 700; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .game {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .game img {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 22%;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+      transition: transform 0.12s;
+    }
+
+    .game:active img { transform: scale(0.94); }
+  </style>
 </head>
 <body>
-  <canvas id="game"></canvas>
+  <main>
+    <header>
+      <img src="icons/icon-192.png" alt="">
+      <div>
+        <h1>67 Arcade</h1>
+        <p class="sub">Pick a game</p>
+      </div>
+    </header>
 
-  <div id="hud" class="hidden">
-    <div id="score">0</div>
-    <div id="combo"></div>
-  </div>
+    <!-- Add new games here; they fill in left to right, top to bottom. -->
+    <nav class="grid">
+      <a class="game" href="stacky/">
+        <img src="stacky/thumb.png" alt="">
+        <span>Stacky</span>
+      </a>
+    </nav>
+  </main>
 
-  <div id="menu" class="overlay">
-    <h1>Stacky</h1>
-    <p class="tag">Tap to drop. Don't miss.</p>
-    <p class="best">Best: <span id="menu-best">0</span></p>
-    <p class="hint pulse">Tap to start</p>
-  </div>
-
-  <div id="over" class="overlay hidden">
-    <div class="card">
-      <p class="label">Score</p>
-      <p id="final" class="big">0</p>
-      <p id="new-best" class="hidden">New best!</p>
-      <p class="best">Best: <span id="over-best">0</span></p>
-      <p id="rank" class="rank"></p>
-      <p class="hint pulse">Tap to retry</p>
-    </div>
-  </div>
-
-  <script src="game.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));

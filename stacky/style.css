@@ -67,6 +67,23 @@ canvas {
   transition: opacity 0.25s;
 }
 
+#home {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 12px);
+  left: 12px;
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  font-size: 24px;
+  text-decoration: none;
+}
+
 .hidden { display: none !important; }
 
 .card {

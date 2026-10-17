@@ -1,11 +1,14 @@
 // Bump this when you change any file so phones pick up the new version.
-const CACHE = 'stacky-v1';
+const CACHE = 'arcade-v2';
 const FILES = [
   './',
   'index.html',
-  'style.css',
-  'game.js',
   'manifest.json',
+  'stacky/',
+  'stacky/index.html',
+  'stacky/style.css',
+  'stacky/game.js',
+  'stacky/thumb.png',
   'icons/icon-192.png',
   'icons/icon-512.png',
   'icons/apple-touch-icon.png',

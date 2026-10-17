@@ -1,6 +1,10 @@
-# Stacky
+# 67 Arcade
 
-A one-tap tower stacking game that installs to your phone's home screen (it's a Progressive Web App).
+A little collection of games that installs to your phone's home screen (it's a Progressive Web App). Opening the app shows a home screen of games; tap one to play, and use the ← button to get back.
+
+## Games
+
+### Stacky (`stacky/`)
 
 **How to play:** a block slides back and forth. Tap to drop it. Whatever hangs off the edge gets sliced off, so the tower gets narrower. Miss completely and it's game over. Line a block up perfectly to start a combo; after 3 perfects in a row, your blocks start growing back.
 
@@ -23,6 +27,12 @@ python3 -m http.server 8000
 
 Then open http://localhost:8000.
 
+## Adding a game
+
+1. Put it in its own folder, e.g. `newgame/index.html`.
+2. Add a tile for it in the grid in the top-level `index.html`.
+3. Add its files to `FILES` in `sw.js` so it works offline.
+
 ## Updating
 
-After changing any file, bump `CACHE` in `sw.js` (e.g. `stacky-v2`) so installed copies pick up the new version.
+After changing any file, bump `CACHE` in `sw.js` (e.g. `arcade-v3`) so installed copies pick up the new version.
