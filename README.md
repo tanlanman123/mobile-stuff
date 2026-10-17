@@ -27,6 +27,18 @@ python3 -m http.server 8000
 
 Then open http://localhost:8000.
 
+### Physics (`physics/`)
+
+A sandbox running a small physics engine written from scratch (`physics/engine.js`, no libraries).
+
+- **Tap empty space** to drop the selected shape: ball, box, plank, triangle or hexagon.
+- **Size / Mass / Bounce** sliders set what the next shape will be. Mass goes from 0.1 kg to 50 kg, and darker shapes are heavier.
+- **Drag a shape** to carry or throw it. Heavy things are hard to lift.
+- **✕ tool** erases shapes you tap or swipe over.
+- **Gravity** button cycles between normal gravity, zero G, and **Tilt** (tilt your phone to pour things around).
+
+Engine features: circles and convex polygons, friction, restitution, warm-started impulse solver with substeps, shock propagation and mass-ratio limiting for stable stacks of very different masses, and sleeping for piles at rest.
+
 ## Adding a game
 
 1. Put it in its own folder, e.g. `newgame/index.html`.

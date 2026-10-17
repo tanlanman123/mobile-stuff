@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Physics</title>
+  <meta name="description" content="A physics sandbox with adjustable mass and size.">
+  <meta name="theme-color" content="#141f23">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="67 Arcade">
+  <link rel="manifest" href="../manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="../icons/icon-192.png">
+  <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="world"></canvas>
+
+  <div id="top">
+    <a class="btn round" href="../" aria-label="Back to games">&#8592;</a>
+    <div class="spacer"></div>
+    <button id="gravity" class="btn">Gravity</button>
+    <button id="pause" class="btn round" aria-label="Pause">&#10074;&#10074;</button>
+    <button id="clear" class="btn">Clear</button>
+  </div>
+
+  <div id="panel">
+    <div id="tools">
+      <button class="tool active" data-tool="ball" aria-label="Ball">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
+      </button>
+      <button class="tool" data-tool="box" aria-label="Box">
+        <svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="1"/></svg>
+      </button>
+      <button class="tool" data-tool="plank" aria-label="Plank">
+        <svg viewBox="0 0 24 24"><rect x="2" y="9" width="20" height="6" rx="1"/></svg>
+      </button>
+      <button class="tool" data-tool="triangle" aria-label="Triangle">
+        <svg viewBox="0 0 24 24"><polygon points="12,4 21,19 3,19"/></svg>
+      </button>
+      <button class="tool" data-tool="hexagon" aria-label="Hexagon">
+        <svg viewBox="0 0 24 24"><polygon points="12,3 20,7.5 20,16.5 12,21 4,16.5 4,7.5"/></svg>
+      </button>
+      <button class="tool erase" data-tool="erase" aria-label="Erase">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <label class="slider">
+      <span>Size</span>
+      <input id="size" type="range" min="10" max="80" value="30">
+      <output id="size-out">30</output>
+    </label>
+    <label class="slider">
+      <span>Mass</span>
+      <input id="mass" type="range" min="0" max="100" value="37">
+      <output id="mass-out">1 kg</output>
+    </label>
+    <label class="slider">
+      <span>Bounce</span>
+      <input id="bounce" type="range" min="0" max="95" value="30">
+      <output id="bounce-out">30%</output>
+    </label>
+  </div>
+
+  <script src="engine.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('../sw.js', { scope: '../' }));
+    }
+  </script>
+</body>
+</html>

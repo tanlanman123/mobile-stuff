@@ -1,5 +1,5 @@
 // Bump this when you change any file so phones pick up the new version.
-const CACHE = 'arcade-v2';
+const CACHE = 'arcade-v3';
 const FILES = [
   './',
   'index.html',
@@ -9,6 +9,12 @@ const FILES = [
   'stacky/style.css',
   'stacky/game.js',
   'stacky/thumb.png',
+  'physics/',
+  'physics/index.html',
+  'physics/style.css',
+  'physics/engine.js',
+  'physics/app.js',
+  'physics/thumb.png',
   'icons/icon-192.png',
   'icons/icon-512.png',
   'icons/apple-touch-icon.png',
