@@ -43,6 +43,10 @@ A sandbox running a small physics engine written from scratch (`physics/engine.j
 
 Engine features: circles and convex polygons, friction, restitution, warm-started impulse solver with substeps, shock propagation and mass-ratio limiting for stable stacks of very different masses, and sleeping for piles at rest, and inverse-square attraction toward heavy bodies.
 
+### Cars (`cars/`)
+
+**How to play:** drag left and right anywhere on the screen to steer (or use the arrow keys / A and D). Dodge the traffic. You start at 60 mph and keep speeding up, and traffic gets denser the faster you go. Your score is the miles you've driven; hit a car and it's over. There's always at least one open lane.
+
 ## Adding a game
 
 1. Put it in its own folder, e.g. `newgame/index.html`.
