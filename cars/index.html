@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Cars</title>
+  <meta name="description" content="Dodge traffic and see how far you can drive.">
+  <meta name="theme-color" content="#2f6b3a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="67 Arcade">
+  <link rel="manifest" href="../manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="../icons/icon-192.png">
+  <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <a id="home" href="../" aria-label="Back to games">&#8592;</a>
+
+  <div id="hud" class="hidden">
+    <div id="miles">0.00<small> mi</small></div>
+    <div id="speed">60 mph</div>
+  </div>
+
+  <div id="menu" class="overlay">
+    <h1>Cars</h1>
+    <p class="tag">Drag to steer. Dodge the traffic.</p>
+    <p class="best">Best: <span id="menu-best">0.00</span> mi</p>
+    <p class="hint pulse">Tap to start</p>
+  </div>
+
+  <div id="over" class="overlay hidden">
+    <div class="card">
+      <p class="label">You drove</p>
+      <p class="big"><span id="final">0.00</span><small> mi</small></p>
+      <p id="new-best" class="hidden">New best!</p>
+      <p class="best">Best: <span id="over-best">0.00</span> mi</p>
+      <p id="top-speed" class="best"></p>
+      <p id="rank" class="rank"></p>
+      <p class="hint pulse">Tap to retry</p>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      const hadController = !!navigator.serviceWorker.controller;
+      window.addEventListener('load', () => navigator.serviceWorker.register('../sw.js', { scope: '../' }));
+      // When an update takes over, reload once so the new version shows up.
+      let reloaded = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (reloaded || !hadController) return;
+        reloaded = true;
+        location.reload();
+      });
+    }
+  </script>
+</body>
+</html>
