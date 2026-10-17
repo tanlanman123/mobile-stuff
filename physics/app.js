@@ -124,7 +124,7 @@
     }
     // Up/down calibrates itself above; left/right is mirrored to match how
     // it behaves on real phones.
-    tilt = vec(-raw.x * tiltSign, raw.y * tiltSign);
+    tilt = vec(raw.x * tiltSign, raw.y * tiltSign);
   }
 
   async function enableTilt() {
