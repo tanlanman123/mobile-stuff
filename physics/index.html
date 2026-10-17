@@ -21,7 +21,7 @@
   <div id="top">
     <a class="btn round" href="../" aria-label="Back to games">&#8592;</a>
     <div class="spacer"></div>
-    <button id="gravity" class="btn">Gravity</button>
+    <button id="tilt" class="btn">Tilt</button>
     <button id="pause" class="btn round" aria-label="Pause">&#10074;&#10074;</button>
     <button id="clear" class="btn">Clear</button>
   </div>
@@ -62,6 +62,11 @@
       <span>Bounce</span>
       <input id="bounce" type="range" min="0" max="95" value="30">
       <output id="bounce-out">30%</output>
+    </label>
+    <label class="slider">
+      <span>Gravity</span>
+      <input id="gravity-strength" type="range" min="0" max="300" step="5" value="100">
+      <output id="gravity-strength-out">100%</output>
     </label>
   </div>
 

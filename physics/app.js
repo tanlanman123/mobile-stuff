@@ -39,44 +39,50 @@
     });
   });
 
-  // ---- Gravity: down, zero-g, or phone tilt ----
-  const G = 1500;
-  const gravityModes = ['Gravity', 'Zero G', 'Tilt'];
-  let gravityMode = 0;
+  // ---- Gravity: strength slider, straight down or phone tilt ----
+  const G = 1500; // 100% gravity, px/s^2
+  let gravityScale = 1;
+  let tiltOn = false;
   let tilt = null;
-  let tiltSign = 1;
+  let tiltSign = 0; // browsers disagree on the sensor's sign; learned on first reading
+
+  bindSlider('gravity-strength', (v) => { gravityScale = v / 100; return v + '%'; });
 
   function onMotion(e) {
     const a = e.accelerationIncludingGravity;
     if (!a || a.x == null) return;
-    tilt = vec((-a.x / 9.81) * tiltSign, (a.y / 9.81) * tiltSign);
+    const raw = vec(a.x / 9.81, -a.y / 9.81);
+    if (!tiltSign) {
+      // Calibrate: when tilt is turned on the phone is held roughly upright,
+      // so "down" must point toward the bottom of the screen. Wait until
+      // it's clearly not lying flat.
+      if (Math.abs(raw.y) < 0.4) return;
+      tiltSign = raw.y > 0 ? 1 : -1;
+    }
+    tilt = vec(raw.x * tiltSign, raw.y * tiltSign);
   }
 
   async function enableTilt() {
     const DM = window.DeviceMotionEvent;
     if (!DM) return false;
     if (typeof DM.requestPermission === 'function') {
-      // iOS asks first, and reports the opposite sign to Android.
+      // iOS asks for permission first.
       try { if ((await DM.requestPermission()) !== 'granted') return false; } catch { return false; }
-      tiltSign = -1;
     }
+    tiltSign = 0;
+    tilt = null;
     window.addEventListener('devicemotion', onMotion);
     return true;
   }
 
-  $('gravity').addEventListener('click', async () => {
-    gravityMode = (gravityMode + 1) % gravityModes.length;
-    if (gravityModes[gravityMode] === 'Tilt' && !(await enableTilt())) gravityMode = 0;
-    $('gravity').textContent = gravityModes[gravityMode];
-    $('gravity').classList.toggle('on', gravityMode !== 0);
+  $('tilt').addEventListener('click', async () => {
+    tiltOn = !tiltOn && (await enableTilt());
+    $('tilt').classList.toggle('on', tiltOn);
   });
 
   function updateGravity() {
-    const mode = gravityModes[gravityMode];
-    let g;
-    if (mode === 'Gravity') g = vec(0, G);
-    else if (mode === 'Zero G') g = vec(0, 0);
-    else g = tilt ? vec(tilt.x * G, tilt.y * G) : vec(0, G);
+    const dir = tiltOn && tilt ? tilt : vec(0, 1);
+    const g = vec(dir.x * G * gravityScale, dir.y * G * gravityScale);
     // Resting objects need a nudge awake when "down" changes.
     if (Math.hypot(g.x - world.gravity.x, g.y - world.gravity.y) > 20) world.wakeAll();
     world.gravity = g;
@@ -96,15 +102,14 @@
   // ---- Layout ----
   function buildWalls() {
     for (const w of walls) world.remove(w);
-    const tall = H * 6;
     const make = (x, y, w, h) => world.add(new Body({
       shape: 'poly', x, y, verts: shapes.box(w, h), isStatic: true, restitution: 1, friction: 0.6,
     }));
     walls = [
       make(W / 2, floorY + WALL / 2, W + WALL * 2, WALL),                 // floor
-      make(-WALL / 2, floorY - tall / 2, WALL, tall),                     // left
-      make(W + WALL / 2, floorY - tall / 2, WALL, tall),                  // right
-      make(W / 2, floorY - tall - WALL / 2, W + WALL * 2, WALL),          // far-off ceiling
+      make(W / 2, -WALL / 2, W + WALL * 2, WALL),                         // ceiling at the top edge
+      make(-WALL / 2, floorY / 2, WALL, floorY + WALL * 2),               // left
+      make(W + WALL / 2, floorY / 2, WALL, floorY + WALL * 2),            // right
     ];
   }
 
@@ -121,7 +126,7 @@
     for (const b of world.bodies) {
       if (b.isStatic) continue;
       b.pos.x = Math.min(Math.max(b.pos.x, b.radius), W - b.radius);
-      b.pos.y = Math.min(b.pos.y, floorY - b.radius);
+      b.pos.y = Math.min(Math.max(b.pos.y, b.radius), floorY - b.radius);
       b.updateGeometry();
     }
     world.wakeAll();
@@ -148,7 +153,7 @@
 
     // Keep it inside the walls and above the floor.
     body.pos.x = Math.min(Math.max(x, body.radius + 1), W - body.radius - 1);
-    body.pos.y = Math.min(y, floorY - body.radius - 1);
+    body.pos.y = Math.min(Math.max(y, body.radius + 1), floorY - body.radius - 1);
     body.updateGeometry();
     world.add(body);
 

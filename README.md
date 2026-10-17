@@ -35,7 +35,8 @@ A sandbox running a small physics engine written from scratch (`physics/engine.j
 - **Size / Mass / Bounce** sliders set what the next shape will be. Mass goes from 0.1 kg to 50 kg, and darker shapes are heavier.
 - **Drag a shape** to carry or throw it. Heavy things are hard to lift.
 - **✕ tool** erases shapes you tap or swipe over.
-- **Gravity** button cycles between normal gravity, zero G, and **Tilt** (tilt your phone to pour things around).
+- **Gravity** slider sets how strong gravity is, from 0% (floating) to 300%.
+- **Tilt** button makes gravity follow your phone, so you can pour things around. It calibrates when you turn it on, so hold the phone upright at that moment.
 
 Engine features: circles and convex polygons, friction, restitution, warm-started impulse solver with substeps, shock propagation and mass-ratio limiting for stable stacks of very different masses, and sleeping for piles at rest.
 
