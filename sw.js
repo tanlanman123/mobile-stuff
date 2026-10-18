@@ -1,5 +1,5 @@
 // Bump this when you change any file so phones pick up the new version.
-const CACHE = 'arcade-v10';
+const CACHE = 'arcade-v11';
 const FILES = [
   './',
   'index.html',
