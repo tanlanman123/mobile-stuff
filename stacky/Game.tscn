@@ -1,0 +1,48 @@
+[gd_scene format=3 uid="uid://cme55ymkow2ug"]
+
+[ext_resource type="Script" uid="uid://mhfpo8dnb2yr" path="res://game.gd" id="1_u44n3"]
+[ext_resource type="Texture2D" uid="uid://d3cqhmmo6mqpi" path="res://icon.svg" id="1_wbfu4"]
+[ext_resource type="PackedScene" uid="uid://ts036avj2rk0" path="res://block.tscn" id="1_xkndl"]
+[ext_resource type="Script" uid="uid://cp2ewt1nyudmk" path="res://ui.gd" id="4_sb48q"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_og2xu"]
+size = Vector2(127.64802, 128)
+
+[node name="Node2D" type="Node2D" unique_id=1032455574]
+script = ExtResource("1_u44n3")
+
+[node name="RigidBody2D" parent="." unique_id=703020783 instance=ExtResource("1_xkndl")]
+position = Vector2(-0.50001526, 0)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=2026218194]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=1224435342]
+position = Vector2(-1.5258789e-05, 74)
+scale = Vector2(1.5624998, 1)
+shape = SubResource("RectangleShape2D_og2xu")
+
+[node name="Icon" type="Sprite2D" parent="StaticBody2D" unique_id=780955256]
+position = Vector2(-1.5258789e-05, 32.49999)
+scale = Vector2(1.5624998, 0.35156268)
+texture = ExtResource("1_wbfu4")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1065568191]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1500738211]
+
+[node name="ui" type="Control" parent="CanvasLayer" unique_id=82130298]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 60.0
+offset_bottom = 60.0
+script = ExtResource("4_sb48q")
+
+[node name="Label" type="Label" parent="CanvasLayer/ui" unique_id=932273849]
+layout_mode = 0
+offset_left = 439.0
+offset_top = 12.0
+offset_right = 479.0
+offset_bottom = 100.0
+theme_override_font_sizes/font_size = 64
