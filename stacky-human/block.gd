@@ -8,6 +8,9 @@ var already_clicked = false
 var spawn_side = ""
 
 func _ready() -> void:
+	# Blocks only move from code; frozen so contacts can't nudge or tilt them
+	freeze_mode = RigidBody2D.FREEZE_MODE_KINEMATIC
+	freeze = true
 	start_x = position.x
 	if spawn_side == "":
 		Global.grid_x = position.x
@@ -47,7 +50,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		position.x = Global.grid_x + snappedf(position.x - Global.grid_x, 5.0)
 		Global.speed = speed + 10
 		Global.position = global_position
-		Global.score += 1
 		Check_rebublic()
 		
 
@@ -66,15 +68,16 @@ func Check_rebublic() -> void:
 			names.append(i)
 		else:
 			destroyed += 1
-			piece.queue_free()
 	if pieces_left == 0:
-		Global.speed = 200
-		Global.pieces = 41
-		Global.score = 0
-		Global.pieces_left_names = []
-		Global.perfect_streak = 0
-		get_tree().reload_current_scene()
+		# Total miss: the whole block drops off the screen
+		var fall = create_tween()
+		fall.tween_property(self, "position:y", position.y + 600, 0.8).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+		Global.game_over()
 		return
+	for i in range(1, 41):
+		if not i in names and has_node(str(i)):
+			get_node(str(i)).queue_free()
+	Global.score += 1
 	if destroyed == 0:
 		Global.perfect_streak += 1
 	else:

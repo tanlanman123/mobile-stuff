@@ -8,6 +8,10 @@ A little collection of games that installs to your phone's home screen (it's a P
 
 **How to play:** a block slides back and forth. Tap to drop it. Whatever hangs off the edge gets sliced off, so the tower gets narrower. Miss completely and it's game over. Line a block up perfectly to start a combo; after 3 perfects in a row, your blocks start growing back.
 
+### Stacky, human made (`stacky-human/`)
+
+A Godot 4.7 version of Stacky. Tap to drop each block; anything hanging off is sliced away, and a full miss ends the game with your score and best. The Godot project lives in the same folder: open `stacky-human/project.godot` in Godot 4.7, then export with the **Web** preset to `stacky-human/index.html` to rebuild the game files. The preset already adds the ← back button and links the app manifest. It works offline after you've played it once.
+
 ## Put it on your phone
 
 1. In this repo on GitHub, go to **Settings → Pages**.
