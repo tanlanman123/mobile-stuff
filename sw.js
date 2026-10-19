@@ -1,5 +1,5 @@
 // Bump this when you change any file so phones pick up the new version.
-const CACHE = 'arcade-v11';
+const CACHE = 'arcade-v12';
 const FILES = [
   './',
   'index.html',
@@ -20,6 +20,17 @@ const FILES = [
   'cars/style.css',
   'cars/game.js',
   'cars/thumb.png',
+  // Human-made Stacky's 40 MB index.wasm isn't listed; it's cached the first
+  // time the game is played, so the install stays small.
+  'stacky-human/',
+  'stacky-human/index.html',
+  'stacky-human/index.js',
+  'stacky-human/index.pck',
+  'stacky-human/index.audio.worklet.js',
+  'stacky-human/index.audio.position.worklet.js',
+  'stacky-human/index.png',
+  'stacky-human/index.icon.png',
+  'stacky-human/index.apple-touch-icon.png',
   'icons/icon-192.png',
   'icons/icon-512.png',
   'icons/apple-touch-icon.png',
