@@ -1,5 +1,5 @@
 // Bump this when you change any file so phones pick up the new version.
-const CACHE = 'arcade-v12';
+const CACHE = 'arcade-v13';
 const FILES = [
   './',
   'index.html',
@@ -31,6 +31,16 @@ const FILES = [
   'stacky-human/index.png',
   'stacky-human/index.icon.png',
   'stacky-human/index.apple-touch-icon.png',
+  // Same for Bounce Shot's 38 MB index.wasm.
+  'bounce-shot/',
+  'bounce-shot/index.html',
+  'bounce-shot/index.js',
+  'bounce-shot/index.pck',
+  'bounce-shot/index.audio.worklet.js',
+  'bounce-shot/index.audio.position.worklet.js',
+  'bounce-shot/index.png',
+  'bounce-shot/index.icon.png',
+  'bounce-shot/index.apple-touch-icon.png',
   'icons/icon-192.png',
   'icons/icon-512.png',
   'icons/apple-touch-icon.png',

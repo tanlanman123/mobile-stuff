@@ -12,6 +12,10 @@ A little collection of games that installs to your phone's home screen (it's a P
 
 A Godot 4.7 version of Stacky. Tap to drop each block; anything hanging off is sliced away, and a full miss ends the game with your score and best. The Godot project lives in the same folder: open `stacky-human/project.godot` in Godot 4.7, then export with the **Web** preset to `stacky-human/index.html` to rebuild the game files. The preset already adds the ← back button and links the app manifest. It works offline after you've played it once.
 
+### Bounce Shot, human made (`bounce-shot/`)
+
+A Godot 4.7 game. Pick a level, then press and hold anywhere to shoot the ball; it bounces off the orange bumpers and the walls. The folder holds only the web export: export from Godot with the **Web** preset to `bounce-shot/index.html` (name the export `index`, not `Game`, so the folder opens straight to the game), and paste the ← back button snippet from `stacky-human/export_presets.cfg` into **HTML → Head Include** so it keeps the button and offline support. It works offline after you've played it once.
+
 ## Put it on your phone
 
 1. In this repo on GitHub, go to **Settings → Pages**.
