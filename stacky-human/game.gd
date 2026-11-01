@@ -10,8 +10,14 @@ func _ready() -> void:
 	$Camera2D.position = current_block.position
 
 func _process(_delta: float) -> void:
-	if Input.is_action_just_pressed("lmb"):spawn_new_block()
-	if is_instance_valid(current_block):
+	if Input.is_action_just_pressed("lmb"):
+		if not Global.is_over:
+			spawn_new_block()
+		# Short wait so the tap that ended the game doesn't skip the game over screen
+		elif Time.get_ticks_msec() - Global.over_at > 600:
+			Global.reset()
+			get_tree().reload_current_scene()
+	if is_instance_valid(current_block) and not Global.is_over:
 		$Camera2D.position.y = current_block.global_position.y
 
 func spawn_new_block():
