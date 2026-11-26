@@ -257,7 +257,7 @@
   });
 
   // Letting go close to your own rope still closes the loop.
-  const SNAP_DIST = () => 55 * S;
+  const SNAP_DIST = () => 100 * S;
   function findSnap() {
     const n = trail.length;
     if (n < 6) return -1;
