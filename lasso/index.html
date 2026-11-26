@@ -20,6 +20,16 @@
 
   <a id="home" href="../" aria-label="Back to games">&#8592;</a>
 
+  <button id="pause" class="hidden" aria-label="Pause">&#10074;&#10074;</button>
+
+  <div id="paused" class="overlay hidden">
+    <div class="card">
+      <p class="label">Paused</p>
+      <p class="best">Score: <span id="paused-score">0</span></p>
+      <p class="hint pulse">Tap to resume</p>
+    </div>
+  </div>
+
   <div id="hud" class="hidden">
     <div id="score">0</div>
     <div id="hearts"></div>
