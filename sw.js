@@ -1,5 +1,5 @@
 // Bump this when you change any file so phones pick up the new version.
-const CACHE = 'arcade-v13';
+const CACHE = 'arcade-v14';
 const FILES = [
   './',
   'index.html',
@@ -20,6 +20,11 @@ const FILES = [
   'cars/style.css',
   'cars/game.js',
   'cars/thumb.png',
+  'lasso/',
+  'lasso/index.html',
+  'lasso/style.css',
+  'lasso/game.js',
+  'lasso/thumb.png',
   // Human-made Stacky's 40 MB index.wasm isn't listed; it's cached the first
   // time the game is played, so the install stays small.
   'stacky-human/',

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Lasso</title>
+  <meta name="description" content="Draw loops around glowing orbs of the same color.">
+  <meta name="theme-color" content="#0b0d1f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="67 Arcade">
+  <link rel="manifest" href="../manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="../icons/icon-192.png">
+  <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <a id="home" href="../" aria-label="Back to games">&#8592;</a>
+
+  <div id="hud" class="hidden">
+    <div id="score">0</div>
+    <div id="hearts"></div>
+  </div>
+
+  <div id="menu" class="overlay">
+    <h1>Lasso</h1>
+    <p class="tag">Draw a loop around orbs of the <b>same color</b>.</p>
+    <ul class="rules">
+      <li>Bigger loops of one color score way more</li>
+      <li>Catch orbs before their ring runs out</li>
+      <li>Never loop a <span class="spike">spiky mine</span></li>
+      <li><span class="gold">Gold stars</span> match any color, <span class="pink">hearts</span> heal</li>
+    </ul>
+    <p class="best">Best: <span id="menu-best">0</span></p>
+    <p class="hint pulse">Tap to start</p>
+  </div>
+
+  <div id="over" class="overlay hidden">
+    <div class="card">
+      <p class="label">Score</p>
+      <p id="final" class="big">0</p>
+      <p id="new-best" class="hidden">New best!</p>
+      <p class="best">Best: <span id="over-best">0</span></p>
+      <p id="stats" class="stats"></p>
+      <p class="hint pulse">Tap to retry</p>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      const hadController = !!navigator.serviceWorker.controller;
+      window.addEventListener('load', () => navigator.serviceWorker.register('../sw.js', { scope: '../' }));
+      // When an update takes over, reload once so the new version shows up.
+      let reloaded = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (reloaded || !hadController) return;
+        reloaded = true;
+        location.reload();
+      });
+    }
+  </script>
+</body>
+</html>
