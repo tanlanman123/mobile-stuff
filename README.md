@@ -57,12 +57,14 @@ Engine features: circles and convex polygons, friction, restitution, warm-starte
 
 ### Lasso (`lasso/`)
 
-**How to play:** glowing orbs drift around the screen. Drag your finger to draw a glowing rope, and cross your own line to close a loop. Everything inside the loop is caught. Loops of one color score 10 × (orbs)², so a loop of 5 blues is worth 250 while 5 mixed orbs is only 25. Every 4 one-color loops in a row raise your streak multiplier.
+**How to play:** glowing orbs drift around the screen. Drag your finger to draw a glowing rope, and cross your own line to close a loop. You can also just let go near your line and the gap closes for you (a dashed line shows when it will). Everything inside the loop is caught. Loops of one color score 10 × (orbs)², so a loop of 5 blues is worth 250 while 5 mixed orbs is only 25. Every 4 one-color loops in a row raise your streak multiplier.
 
 - Each orb has a ring that runs down. If it runs out, you lose a heart. You have 3.
 - **Spiky red mines:** loop one and it blows up the whole loop and costs a heart. Touch one with your rope and the rope snaps.
 - **Gold stars** count as any color. **Pink hearts** give a heart back (up to 5).
 - Your rope has a limited length, and it turns pink as you run out.
+
+Tap the pause button (next to ←) to pause. It also pauses by itself if you leave the app.
 
 It gets faster over time: more orbs, a fourth color after 25 seconds, and more mines.
 

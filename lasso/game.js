@@ -7,6 +7,7 @@
   const ui = {
     hud: $('hud'), score: $('score'), hearts: $('hearts'),
     menu: $('menu'), menuBest: $('menu-best'),
+    pauseBtn: $('pause'), paused: $('paused'), pausedScore: $('paused-score'),
     over: $('over'), final: $('final'), newBest: $('new-best'), overBest: $('over-best'), stats: $('stats'),
   };
 
@@ -90,7 +91,7 @@
   }
 
   // ---- State ----
-  let state = 'menu'; // menu | play | over
+  let state = 'menu'; // menu | play | paused | over
   let orbs = [];
   let particles = [];
   let popups = [];
@@ -241,6 +242,7 @@
     ensureAudio();
     if (state === 'menu') { start(); return; }
     if (state === 'over') { if (performance.now() - overAt > 600) start(); return; }
+    if (state === 'paused') { resume(); return; }
     if (pointerId !== null) return;
     pointerId = e.pointerId;
     try { canvas.setPointerCapture(e.pointerId); } catch { /* ignore */ }
@@ -254,8 +256,29 @@
     for (const ev of (events.length ? events : [e])) addPoint(toLocal(ev));
   });
 
+  // Letting go close to your own rope still closes the loop.
+  const SNAP_DIST = () => 55 * S;
+  function findSnap() {
+    const n = trail.length;
+    if (n < 6) return -1;
+    const tip = trail[n - 1];
+    const minPath = 140 * S;
+    let walked = 0, bestJ = -1, bestD = SNAP_DIST();
+    for (let j = n - 2; j >= 0; j--) {
+      walked += Math.hypot(trail[j + 1].x - trail[j].x, trail[j + 1].y - trail[j].y);
+      if (walked < minPath) continue;
+      const d = Math.hypot(trail[j].x - tip.x, trail[j].y - tip.y);
+      if (d <= bestD) { bestD = d; bestJ = j; }
+    }
+    return bestJ;
+  }
+
   const endDraw = (e) => {
     if (e.pointerId !== pointerId) return;
+    if (state === 'play' && e.type === 'pointerup') {
+      const j = findSnap();
+      if (j >= 0) closeLoop(trail.slice(j));
+    }
     pointerId = null;
     drawing = false;
     trail = [];
@@ -412,7 +435,29 @@
     ui.menu.classList.add('hidden');
     ui.over.classList.add('hidden');
     ui.hud.classList.remove('hidden');
+    ui.pauseBtn.classList.remove('hidden');
+    ui.paused.classList.add('hidden');
   }
+
+  function pause() {
+    if (state !== 'play') return;
+    state = 'paused';
+    drawing = false; pointerId = null; trail = [];
+    ui.pausedScore.textContent = score;
+    ui.paused.classList.remove('hidden');
+    ui.pauseBtn.classList.add('hidden');
+  }
+
+  function resume() {
+    if (state !== 'paused') return;
+    state = 'play';
+    ui.paused.classList.add('hidden');
+    ui.pauseBtn.classList.remove('hidden');
+  }
+
+  ui.pauseBtn.addEventListener('click', (e) => { e.stopPropagation(); pause(); });
+  // Pause by itself when you switch apps or lock the phone.
+  document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
 
   function gameOver() {
     state = 'over';
@@ -428,10 +473,12 @@
     ui.stats.innerHTML = `Orbs caught: <b>${caught}</b><br>Biggest one-color loop: <b>${bestLoop}</b><br>Survived: <b>${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}</b>`;
     ui.over.classList.remove('hidden');
     ui.hud.classList.add('hidden');
+    ui.pauseBtn.classList.add('hidden');
   }
 
   // ---- Update ----
   function update(dt) {
+    if (state === 'paused') return;
     if (state === 'play') {
       time += dt;
       spawnTimer -= dt;
@@ -597,6 +644,25 @@
       ctx.stroke();
     }
     const tip = trail[trail.length - 1];
+
+    // Show that letting go here will close the loop.
+    const j = drawing ? findSnap() : -1;
+    if (j >= 0) {
+      const anchor = trail[j];
+      ctx.globalAlpha = 0.12;
+      ctx.fillStyle = `hsl(${hue}, 100%, 70%)`;
+      tracePoly(trail.slice(j));
+      ctx.fill();
+      ctx.globalAlpha = 0.9;
+      ctx.setLineDash([6 * S, 6 * S]);
+      ctx.strokeStyle = `hsl(${hue}, 100%, 85%)`;
+      ctx.lineWidth = 3 * S;
+      ctx.beginPath(); ctx.moveTo(tip.x, tip.y); ctx.lineTo(anchor.x, anchor.y); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+      ctx.drawImage(glowSprite('#ffffff'), anchor.x - 12 * S, anchor.y - 12 * S, 24 * S, 24 * S);
+    }
+
     ctx.drawImage(glowSprite('#ffffff'), tip.x - 18 * S, tip.y - 18 * S, 36 * S, 36 * S);
   }
 
@@ -669,6 +735,6 @@
   // Hooks for automated testing.
   window.__lasso = {
     get state() { return state; }, get score() { return score; }, get hearts() { return hearts; },
-    get orbs() { return orbs; }, start,
+    get orbs() { return orbs; }, start, pause,
   };
 })();
