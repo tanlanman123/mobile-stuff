@@ -139,7 +139,7 @@
       const y = top + r + Math.random() * (H - top - 2 * r - 20);
       let ok = true;
       for (const o of orbs) {
-        if (Math.hypot(o.x - x, o.y - y) < o.r + r + 14) { ok = false; break; }
+        if (Math.hypot(o.x - x, o.y - y) < o.r + r + (o.kind === 'mine' ? 40 * S : 14)) { ok = false; break; }
       }
       if (ok) return { x, y };
     }
@@ -521,6 +521,8 @@
       }
     }
 
+    keepClearOfMines();
+
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       p.t += dt;
@@ -532,6 +534,33 @@
     for (let i = flashes.length - 1; i >= 0; i--) { flashes[i].t += dt; if (flashes[i].t > flashes[i].dur) flashes.splice(i, 1); }
     shake = Math.max(0, shake - dt * 40);
     redFlash = Math.max(0, redFlash - dt * 2);
+  }
+
+  // Dots bounce off mines and keep a gap wide enough to draw a rope through,
+  // so a dot never gets stuck under a mine where you can't loop it.
+  function keepClearOfMines() {
+    const gap = 26 * S;
+    for (const m of orbs) {
+      if (m.kind !== 'mine') continue;
+      for (const o of orbs) {
+        if (o === m) continue;
+        const min = m.r + o.r + (o.kind === 'mine' ? 4 * S : gap);
+        let dx = o.x - m.x, dy = o.y - m.y;
+        let d = Math.hypot(dx, dy);
+        if (d >= min) continue;
+        if (d < 0.001) { dx = 1; dy = 0; d = 1; }
+        const nx = dx / d, ny = dy / d;
+        const push = min - d;
+        // Mostly the dot moves out of the way; the mine shifts a little.
+        o.x += nx * push * 0.8; o.y += ny * push * 0.8;
+        m.x -= nx * push * 0.2; m.y -= ny * push * 0.2;
+        // Bounce the dot away if it was heading into the mine.
+        const vn = o.vx * nx + o.vy * ny;
+        if (vn < 0) { o.vx -= 2 * vn * nx; o.vy -= 2 * vn * ny; }
+        const mn = m.vx * nx + m.vy * ny;
+        if (mn > 0) { m.vx -= 2 * mn * nx; m.vy -= 2 * mn * ny; }
+      }
+    }
   }
 
   // ---- Draw ----
